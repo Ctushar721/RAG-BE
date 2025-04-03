@@ -21,7 +21,19 @@ export class OpenAIService {
     try {
       // Limit context length to save tokens
       const limitedContext = context.slice(0, 1); // Only use first document to save tokens
-      const prompt = `Context: ${limitedContext.join('\n')}\n\nQuestion: ${query}\nAnswer:`;
+      const prompt = `You are a helpful assistant that answers questions based ONLY on the provided context. Follow these rules strictly:
+
+1. Use ONLY the information provided in the context below to answer the question
+2. If the answer cannot be found in the context, respond with "I cannot answer this question based on the provided context."
+3. Do not use any external knowledge or make assumptions beyond what is given in the context
+4. If the context is incomplete or unclear, acknowledge this in your response
+
+Context:
+${limitedContext.join('\n')}
+
+Question: ${query}
+
+Answer:`;
 
       const completion = await this.openai.completions.create({
         model: "gpt-3.5-turbo-instruct",
