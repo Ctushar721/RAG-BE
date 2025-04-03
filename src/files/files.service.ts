@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Express } from 'express';
 import { ChromaService } from '../chroma/chroma.service';
 import { OpenAIService } from '../openai/openai.service';
@@ -6,12 +6,15 @@ import * as fs from 'fs/promises';
 
 @Injectable()
 export class FilesService {
+  private readonly logger = new Logger(FilesService.name);
   private readonly allowedMimeTypes = [
     'application/pdf',
     'text/plain',
     'text/csv',
     'application/json',
   ];
+  private readonly RELEVANCE_THRESHOLD = 1.5;
+  private readonly MAX_RESULTS = 3;
 
   constructor(
     private readonly chromaService: ChromaService,
@@ -77,20 +80,55 @@ export class FilesService {
     // Get relevant documents from ChromaDB
     const searchResults = await this.chromaService.searchFiles(query);
     
-    // Extract documents from search results
+    // Extract documents and distances from search results
     const documents = searchResults.documents[0] || [];
     const metadatas = searchResults.metadatas[0] || [];
+    const distances = searchResults.distances[0] || [];
 
-    // Generate AI response using OpenAI
-    const aiResponse = await this.openAIService.generateResponse(query, documents);
+    // Log search results for debugging
+    this.logger.debug(`Search results for query: ${query}`);
+    this.logger.debug(`Total documents found: ${documents.length}`);
+    this.logger.debug(`Distances: ${distances.join(', ')}`);
+
+    // Filter documents by relevance threshold and get top 3
+    const relevantResults = documents
+      .map((doc, index) => ({
+        content: doc,
+        metadata: metadatas[index],
+        distance: distances[index]
+      }))
+      .filter(result => {
+        const isRelevant = result.distance <= this.RELEVANCE_THRESHOLD;
+        this.logger.debug(`Document distance: ${result.distance}, Is relevant: ${isRelevant}`);
+        return isRelevant;
+      })
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, this.MAX_RESULTS);
+
+    this.logger.debug(`Relevant documents after filtering: ${relevantResults.length}`);
+
+    // Generate AI response using OpenAI with filtered documents
+    const aiResponse = await this.openAIService.generateResponse(
+      query, 
+      relevantResults.map(result => result.content)
+    );
 
     return {
       query,
-      relevantDocuments: documents.map((doc, index) => ({
-        content: doc,
-        metadata: metadatas[index]
+      relevantDocuments: relevantResults.map(result => ({
+        content: result.content,
+        metadata: result.metadata,
+        relevance: 1 / (1 + result.distance) // Convert distance to relevance score (0 to 1)
       })),
-      aiResponse
+      aiResponse,
+      searchStats: {
+        totalDocuments: documents.length,
+        documentsAboveThreshold: relevantResults.length,
+        threshold: this.RELEVANCE_THRESHOLD,
+        distances: distances,
+        minDistance: Math.min(...distances),
+        maxDistance: Math.max(...distances)
+      }
     };
   }
 } 

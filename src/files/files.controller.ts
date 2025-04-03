@@ -1,6 +1,7 @@
-import { Controller, Post, UploadedFiles, UseInterceptors, Get, Query } from '@nestjs/common';
+import { Controller, Post, UploadedFiles, UseInterceptors, Body } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
+import { SearchQueryDto } from './dto/search.dto';
 
 @Controller('files')
 export class FilesController {
@@ -12,8 +13,8 @@ export class FilesController {
     return this.filesService.uploadFiles(files);
   }
 
-  @Get('search')
-  async searchFiles(@Query('query') query: string) {
-    return this.filesService.searchFiles(query);
+  @Post('search')
+  async searchFiles(@Body() searchQuery: SearchQueryDto) {
+    return this.filesService.searchFiles(searchQuery.query);
   }
 } 
