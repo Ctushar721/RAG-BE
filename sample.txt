@@ -1,0 +1,10 @@
+Welcome to the sample text file!
+This is line 2 of the sample content.
+Here's line 3 with some example data.
+Line 4 contains more sample information.
+This is the fifth line of the file.
+Line 6 has some additional content.
+Here's line 7 with more sample text.
+Line 8 contains example data.
+This is the ninth line of the file.
+And finally, this is line 10 of our sample content. 

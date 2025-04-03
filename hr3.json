@@ -1,0 +1,37 @@
+{
+  "appraisalSchedule": {
+    "annualReview": "December 15th",
+    "midYearReview": "June 15th",
+    "quarterlyCheckIns": ["March 15th", "June 15th", "September 15th", "December 15th"]
+  },
+  "appraisalParameters": {
+    "performanceMetrics": [
+      "Project Completion",
+      "Quality of Work",
+      "Team Collaboration",
+      "Innovation",
+      "Leadership Skills"
+    ],
+    "ratingScale": {
+      "1": "Needs Improvement",
+      "2": "Meets Expectations",
+      "3": "Exceeds Expectations",
+      "4": "Outstanding",
+      "5": "Exceptional"
+    },
+    "weightage": {
+      "technicalSkills": 30,
+      "softSkills": 20,
+      "projectDelivery": 25,
+      "teamContribution": 15,
+      "innovation": 10
+    }
+  },
+  "reviewProcess": {
+    "selfAssessment": "Due 1 week before review",
+    "managerReview": "Due 3 days before meeting",
+    "peerFeedback": "Optional, due 1 week before review",
+    "finalRating": "Determined in review meeting",
+    "developmentPlan": "Created within 1 week of review"
+  }
+} 
